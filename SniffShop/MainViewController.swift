@@ -22,6 +22,20 @@ class MainViewController: UIViewController {
         return searchBar
     }()
     
+    private let content: UIView = {
+        let view = UIView()
+        return view
+    }()
+    
+    private let mainTextLabel: UILabel = {
+        let label = UILabel()
+        label.text = "킁킁쇼핑몰"
+        label.textColor = .white
+        label.font = .systemFont(ofSize: 14, weight: .semibold)
+        label.textAlignment = .center
+        return label
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -34,12 +48,26 @@ class MainViewController: UIViewController {
 extension MainViewController: ViewDesignProtocol{
     func configureHierarchy() {
         view.addSubview(mainSearchBar)
+        
+        view.addSubview(content)
+
+        content.addSubview(mainTextLabel)
     }
     
     func configureLayout() {
         mainSearchBar.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
             make.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(16)
+        }
+        
+        content.snp.makeConstraints { make in
+            make.top.equalTo(mainSearchBar.snp.bottom).offset(16)
+            make.horizontalEdges.equalTo(view.safeAreaLayoutGuide)
+            make.bottom.equalTo(view.safeAreaLayoutGuide)
+        }
+   
+        mainTextLabel.snp.makeConstraints { make in
+            make.center.equalToSuperview()
         }
     }
     

@@ -8,10 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		796736912E33DC8300C752E4 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 796736902E33DC8300C752E4 /* SnapKit */; };
+		796736F42E33F3EE00C752E4 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 796736F32E33F3EE00C752E4 /* .gitignore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		796735E12E33D71400C752E4 /* SniffShop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SniffShop.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		796736F32E33F3EE00C752E4 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -50,6 +52,7 @@
 		796735D82E33D71400C752E4 = {
 			isa = PBXGroup;
 			children = (
+				796736F32E33F3EE00C752E4 /* .gitignore */,
 				796735E32E33D71400C752E4 /* SniffShop */,
 				796735E22E33D71400C752E4 /* Products */,
 			);
@@ -131,6 +134,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				796736F42E33F3EE00C752E4 /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

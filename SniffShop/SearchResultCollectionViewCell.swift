@@ -11,10 +11,18 @@ import SnapKit
 class SearchResultCollectionViewCell: UICollectionViewCell {
     
     private let productImageView: UIImageView = {
-       let imageView = UIImageView()
+        let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.backgroundColor = .orange
         return imageView
+    }()
+    
+    private let productMallName: UILabel = {
+        let label = UILabel()
+        label.text = "월드 캠핑카"
+        label.textColor = .systemGray2
+        label.font = .systemFont(ofSize: 12)
+        return label
     }()
     
     //MARK: - Property
@@ -36,12 +44,19 @@ class SearchResultCollectionViewCell: UICollectionViewCell {
 extension SearchResultCollectionViewCell: ViewDesignProtocol{
     func configureHierarchy() {
         contentView.addSubview(productImageView)
+        
+        contentView.addSubview(productMallName)
     }
     
     func configureLayout() {
         productImageView.snp.makeConstraints { make in
             make.top.horizontalEdges.equalToSuperview()
             make.height.equalTo(productImageView.snp.width)
+        }
+        
+        productMallName.snp.makeConstraints { make in
+            make.top.equalTo(productImageView.snp.bottom).offset(5)
+            make.horizontalEdges.equalToSuperview().inset(8)
         }
     }
     

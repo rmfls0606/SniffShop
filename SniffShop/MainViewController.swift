@@ -75,5 +75,15 @@ extension MainViewController: ViewDesignProtocol{
         view.backgroundColor = .black
         
         navigationItem.title = "킁킁쇼핑몰"
+        
+        mainSearchBar.delegate = self
+    }
+}
+
+//MARK: - SearchBar Delegate
+extension MainViewController: UISearchBarDelegate{
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let searchResultVC = SearchResultViewController()
+        navigationController?.pushViewController(searchResultVC, animated: true)
     }
 }

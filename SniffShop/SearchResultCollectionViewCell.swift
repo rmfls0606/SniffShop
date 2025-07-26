@@ -6,8 +6,16 @@
 //
 
 import UIKit
+import SnapKit
 
 class SearchResultCollectionViewCell: UICollectionViewCell {
+    
+    private let productImageView: UIImageView = {
+       let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.backgroundColor = .orange
+        return imageView
+    }()
     
     //MARK: - Property
     static let identifier = "SearchResultCollectionViewCell"
@@ -27,14 +35,17 @@ class SearchResultCollectionViewCell: UICollectionViewCell {
 
 extension SearchResultCollectionViewCell: ViewDesignProtocol{
     func configureHierarchy() {
-       
+        contentView.addSubview(productImageView)
     }
     
     func configureLayout() {
-      
+        productImageView.snp.makeConstraints { make in
+            make.top.horizontalEdges.equalToSuperview()
+            make.height.equalTo(productImageView.snp.width)
+        }
     }
     
     func configureView() {
-        contentView.backgroundColor = .orange
+        
     }
 }

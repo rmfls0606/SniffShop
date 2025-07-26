@@ -92,7 +92,7 @@ extension MainViewController: UISearchBarDelegate{
             return
         }
         
-        let searchResultVC = SearchResultViewController()
+        let searchResultVC = SearchResultViewController(productName: text)
         navigationController?.pushViewController(searchResultVC, animated: true)
     }
 }

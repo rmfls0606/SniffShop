@@ -83,6 +83,15 @@ extension MainViewController: ViewDesignProtocol{
 //MARK: - SearchBar Delegate
 extension MainViewController: UISearchBarDelegate{
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        guard let text = searchBar.text, text.trimmingCharacters(in: .whitespaces).count >= 2 else {
+            let alert = UIAlertController(title: "", message: "정확한 검색을 위해 두 글자 이상 검색어를 입력해주세요.", preferredStyle: .alert)
+            let checkAction = UIAlertAction(title: "확인", style: .default)
+            alert.addAction(checkAction)
+            present(alert, animated: true)
+            
+            return
+        }
+        
         let searchResultVC = SearchResultViewController()
         navigationController?.pushViewController(searchResultVC, animated: true)
     }

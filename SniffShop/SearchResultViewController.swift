@@ -78,6 +78,7 @@ extension SearchResultViewController: ViewDesignProtocol{
     }
 }
 
+//MARK: - CollectionView Delegate
 extension SearchResultViewController: UICollectionViewDelegate, UICollectionViewDataSource{
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         10

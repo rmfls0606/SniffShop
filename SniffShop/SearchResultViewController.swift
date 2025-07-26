@@ -10,6 +10,8 @@ import SnapKit
 
 class SearchResultViewController: UIViewController {
     
+    let productName: String
+    
     //MARK: - View
     private let resultCountLabel: UILabel = {
         let label = UILabel()
@@ -38,7 +40,16 @@ class SearchResultViewController: UIViewController {
         
         return collectionView
     }()
-
+    
+    init(productName: String) {
+        self.productName = productName
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -69,8 +80,7 @@ extension SearchResultViewController: ViewDesignProtocol{
     
     func configureView() {
         view.backgroundColor = .black
-        
-        navigationItem.title = "킁킁인형"
+        navigationItem.title = productName
         
         resultCollectionView.register(SearchResultCollectionViewCell.self, forCellWithReuseIdentifier: SearchResultCollectionViewCell.identifier)
         resultCollectionView.delegate = self

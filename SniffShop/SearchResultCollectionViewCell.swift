@@ -38,6 +38,14 @@ class SearchResultCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
+    private let productPrice: UILabel = {
+        let label = UILabel()
+        label.text = "19000000"
+        label.textColor = .white
+        label.font = .systemFont(ofSize: 14)
+        return label
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -58,6 +66,8 @@ extension SearchResultCollectionViewCell: ViewDesignProtocol{
         contentView.addSubview(productMallName)
         
         contentView.addSubview(productTitle)
+        
+        contentView.addSubview(productPrice)
     }
     
     func configureLayout() {
@@ -74,6 +84,12 @@ extension SearchResultCollectionViewCell: ViewDesignProtocol{
         productTitle.snp.makeConstraints { make in
             make.top.equalTo(productMallName.snp.bottom).offset(5)
             make.horizontalEdges.equalToSuperview().inset(8)
+        }
+        
+        productPrice.snp.makeConstraints { make in
+            make.top.equalTo(productTitle.snp.bottom).offset(5)
+            make.horizontalEdges.equalToSuperview().inset(8)
+            make.bottom.lessThanOrEqualToSuperview()
         }
     }
     

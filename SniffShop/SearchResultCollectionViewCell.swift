@@ -10,6 +10,10 @@ import SnapKit
 
 class SearchResultCollectionViewCell: UICollectionViewCell {
     
+    //MARK: - Property
+    static let identifier = "SearchResultCollectionViewCell"
+    
+    //MARK: - View
     private let productImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -21,12 +25,18 @@ class SearchResultCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.text = "월드 캠핑카"
         label.textColor = .systemGray2
-        label.font = .systemFont(ofSize: 12)
+        label.font = .systemFont(ofSize: 10)
         return label
     }()
     
-    //MARK: - Property
-    static let identifier = "SearchResultCollectionViewCell"
+    private let productTitle: UILabel = {
+        let label = UILabel()
+        label.text = "스타리아 2층 캠핑카"
+        label.textColor = .systemGray5
+        label.font = .systemFont(ofSize: 12)
+        label.numberOfLines = 2
+        return label
+    }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -46,6 +56,8 @@ extension SearchResultCollectionViewCell: ViewDesignProtocol{
         contentView.addSubview(productImageView)
         
         contentView.addSubview(productMallName)
+        
+        contentView.addSubview(productTitle)
     }
     
     func configureLayout() {
@@ -56,6 +68,11 @@ extension SearchResultCollectionViewCell: ViewDesignProtocol{
         
         productMallName.snp.makeConstraints { make in
             make.top.equalTo(productImageView.snp.bottom).offset(5)
+            make.horizontalEdges.equalToSuperview().inset(8)
+        }
+        
+        productTitle.snp.makeConstraints { make in
+            make.top.equalTo(productMallName.snp.bottom).offset(5)
             make.horizontalEdges.equalToSuperview().inset(8)
         }
     }

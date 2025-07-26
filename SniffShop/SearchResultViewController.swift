@@ -72,7 +72,7 @@ extension SearchResultViewController: ViewDesignProtocol{
         
         navigationItem.title = "킁킁인형"
         
-        resultCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
+        resultCollectionView.register(SearchResultCollectionViewCell.self, forCellWithReuseIdentifier: SearchResultCollectionViewCell.identifier)
         resultCollectionView.delegate = self
         resultCollectionView.dataSource = self
     }
@@ -84,8 +84,10 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-        cell.backgroundColor = .gray
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCollectionViewCell.identifier,
+                                                            for: indexPath) as? SearchResultCollectionViewCell else {
+            return UICollectionViewCell()
+        }
         
         return cell
     }

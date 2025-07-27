@@ -67,7 +67,7 @@ class SearchResultCollectionViewCell: UICollectionViewCell {
         }
         
         productMallName.text = product.mallName
-        productTitle.text = product.title
+        productTitle.text = product.title.htmlParseText
         productPrice.text = product.lprice
     }
 }

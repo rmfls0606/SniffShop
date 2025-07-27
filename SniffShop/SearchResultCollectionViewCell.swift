@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Kingfisher
 
 class SearchResultCollectionViewCell: UICollectionViewCell {
     
@@ -17,7 +18,8 @@ class SearchResultCollectionViewCell: UICollectionViewCell {
     private let productImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
-        imageView.backgroundColor = .orange
+        imageView.backgroundColor = .systemGray4
+        imageView.clipsToBounds = true
         return imageView
     }()
     
@@ -56,6 +58,17 @@ class SearchResultCollectionViewCell: UICollectionViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func configureData(product: NaverShoppingResultItem){
+        
+        if let image_url = URL(string: product.image){
+            productImageView.kf.setImage(with: image_url)
+        }
+        
+        productMallName.text = product.mallName
+        productTitle.text = product.title
+        productPrice.text = product.lprice
     }
 }
 

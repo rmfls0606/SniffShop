@@ -118,7 +118,7 @@ extension SearchResultViewController: ViewDesignProtocol{
 //MARK: - CollectionView Delegate
 extension SearchResultViewController: UICollectionViewDelegate, UICollectionViewDataSource{
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        10
+        return productList.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -126,6 +126,8 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
                                                             for: indexPath) as? SearchResultCollectionViewCell else {
             return UICollectionViewCell()
         }
+        
+        cell.configureData(product: productList[indexPath.item])
         
         return cell
     }

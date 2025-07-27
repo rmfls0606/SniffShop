@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Alamofire
 
 class SearchResultViewController: UIViewController {
     
@@ -44,6 +45,7 @@ class SearchResultViewController: UIViewController {
     init(productName: String) {
         self.productName = productName
         super.init(nibName: nil, bundle: nil)
+        callRequest(query: productName)
     }
     
     required init?(coder: NSCoder) {
@@ -57,8 +59,24 @@ class SearchResultViewController: UIViewController {
         configureLayout()
         configureView()
     }
+    
+    func callRequest(query: String){
+        let url = "https://openapi.naver.com/v1/search/shop.json?query=\(query)&display=100"
+        
+        let headers = HTTPHeaders(
+            ["X-Naver-Client-Id": APIKeyManager.naverClientID,
+             "X-Naver-Client-Secret": APIKeyManager.naverClienSecret]
+        )
+        
+        AF.request(url, method: .get, headers: headers)
+            .validate(statusCode: 200..<300)
+            .responseString { response in
+                dump(response)
+            }
+    }
 }
 
+//MARK: - ViewDesignProtocol
 extension SearchResultViewController: ViewDesignProtocol{
     func configureHierarchy() {
         view.addSubview(resultCountLabel)

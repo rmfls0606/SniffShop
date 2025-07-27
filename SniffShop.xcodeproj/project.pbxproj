@@ -28,6 +28,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		7953D69F2E3603D800983205 /* Config */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Config;
+			sourceTree = "<group>";
+		};
 		796735E32E33D71400C752E4 /* SniffShop */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -54,6 +59,7 @@
 		796735D82E33D71400C752E4 = {
 			isa = PBXGroup;
 			children = (
+				7953D69F2E3603D800983205 /* Config */,
 				796736F32E33F3EE00C752E4 /* .gitignore */,
 				796735E32E33D71400C752E4 /* SniffShop */,
 				796735E22E33D71400C752E4 /* Products */,
@@ -84,6 +90,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				7953D69F2E3603D800983205 /* Config */,
 				796735E32E33D71400C752E4 /* SniffShop */,
 			);
 			name = SniffShop;
@@ -157,6 +164,8 @@
 /* Begin XCBuildConfiguration section */
 		796735F52E33D71500C752E4 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 7953D69F2E3603D800983205 /* Config */;
+			baseConfigurationReferenceRelativePath = Secrets.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -219,6 +228,8 @@
 		};
 		796735F72E33D71500C752E4 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 7953D69F2E3603D800983205 /* Config */;
+			baseConfigurationReferenceRelativePath = Secrets.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;

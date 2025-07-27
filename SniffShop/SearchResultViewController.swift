@@ -74,7 +74,6 @@ class SearchResultViewController: UIViewController {
             .responseDecodable(of: NaverShoppingResultResponse.self) { [weak self] response in
                 switch response.result{
                 case .success(let value):
-                    print(value.items)
                     self?.productList = value.items
                     self?.resultCountLabel.text = "\(value.total) 개의 검색 결과"
                     self?.resultCollectionView.reloadData()

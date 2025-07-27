@@ -15,12 +15,34 @@ class SearchResultCollectionViewCell: UICollectionViewCell {
     static let identifier = "SearchResultCollectionViewCell"
     
     //MARK: - View
+    private let productPosterBox: UIView = {
+        let view = UIView()
+        view.layer.cornerRadius = 15
+        view.clipsToBounds = true
+        return view
+    }()
+    
     private let productImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.backgroundColor = .systemGray4
         imageView.clipsToBounds = true
         return imageView
+    }()
+    
+    private let favoriteButton: UIButton = {
+        let button = UIButton()
+        
+        var config = UIButton.Configuration.filled()
+        
+        config.image = UIImage(systemName: "heart")
+        
+        config.cornerStyle = .capsule
+        
+        button.configuration = config
+        button.tintColor = .white
+        
+        return button
     }()
     
     private let productMallName: UILabel = {
@@ -74,7 +96,10 @@ class SearchResultCollectionViewCell: UICollectionViewCell {
 
 extension SearchResultCollectionViewCell: ViewDesignProtocol{
     func configureHierarchy() {
-        contentView.addSubview(productImageView)
+        contentView.addSubview(productPosterBox)
+        
+        productPosterBox.addSubview(productImageView)
+        productPosterBox.addSubview(favoriteButton)
         
         contentView.addSubview(productMallName)
         
@@ -84,13 +109,23 @@ extension SearchResultCollectionViewCell: ViewDesignProtocol{
     }
     
     func configureLayout() {
-        productImageView.snp.makeConstraints { make in
+        productPosterBox.snp.makeConstraints { make in
             make.top.horizontalEdges.equalToSuperview()
             make.height.equalTo(productImageView.snp.width)
         }
         
+        productImageView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
+        favoriteButton.snp.makeConstraints { make in
+            make.trailing.bottom.equalToSuperview().offset(-8)
+            make.width.equalTo(productPosterBox.snp.width).multipliedBy(0.2)
+            make.height.equalTo(favoriteButton.snp.width)
+        }
+        
         productMallName.snp.makeConstraints { make in
-            make.top.equalTo(productImageView.snp.bottom).offset(5)
+            make.top.equalTo(productPosterBox.snp.bottom).offset(5)
             make.horizontalEdges.equalToSuperview().inset(8)
         }
         

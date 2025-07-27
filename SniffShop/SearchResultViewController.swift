@@ -12,6 +12,7 @@ import Alamofire
 class SearchResultViewController: UIViewController {
     
     let productName: String
+    private var productList: [NaverShoppingResultItem] = []
     
     //MARK: - View
     private let resultCountLabel: UILabel = {
@@ -70,10 +71,13 @@ class SearchResultViewController: UIViewController {
         
         AF.request(url, method: .get, headers: headers)
             .validate(statusCode: 200..<300)
-            .responseDecodable(of: NaverShoppingResultResponse.self) { response in
+            .responseDecodable(of: NaverShoppingResultResponse.self) { [weak self] response in
                 switch response.result{
                 case .success(let value):
-                    dump(value)
+                    print(value.items)
+                    self?.productList = value.items
+                    self?.resultCountLabel.text = "\(value.total) 개의 검색 결과"
+                    self?.resultCollectionView.reloadData()
                 case .failure(let error):
                     print(error)
                 }

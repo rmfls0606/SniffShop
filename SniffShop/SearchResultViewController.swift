@@ -70,8 +70,13 @@ class SearchResultViewController: UIViewController {
         
         AF.request(url, method: .get, headers: headers)
             .validate(statusCode: 200..<300)
-            .responseString { response in
-                dump(response)
+            .responseDecodable(of: NaverShoppingResultResponse.self) { response in
+                switch response.result{
+                case .success(let value):
+                    dump(value)
+                case .failure(let error):
+                    print(error)
+                }
             }
     }
 }

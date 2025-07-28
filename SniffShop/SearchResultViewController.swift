@@ -9,13 +9,36 @@ import UIKit
 import SnapKit
 import Alamofire
 
+enum SortOptions: Int, CaseIterable{
+    case sim = 0, date, asc, dsc
+    
+    var title: String{
+        switch self{
+        case .sim: return "정확도"
+        case .date: return "날짜순"
+        case .asc: return "가격낮은순"
+        case .dsc: return "가격높은순"
+        }
+    }
+    
+    var sort: String{
+        switch self{
+        case .sim: return "sim"
+        case .date: return "date"
+        case .asc: return "asc"
+        case .dsc: return "dsc"
+        }
+    }
+}
+
 class SearchResultViewController: UIViewController {
     
     //MARK: - Property
     let productName: String
     private var productList: [NaverShoppingResultItem] = []
-    private let sortItem: [String] = ["정확도", "날짜순", "가격높은순", "가격낮은순"]
     private var sortButtons: [UIButton] = []
+    private var selectedSortOption: SortOptions = .sim
+    
     
     //MARK: - View
     private let resultCountLabel: UILabel = {
@@ -58,7 +81,7 @@ class SearchResultViewController: UIViewController {
     init(productName: String) {
         self.productName = productName
         super.init(nibName: nil, bundle: nil)
-        callRequest(query: productName)
+        callRequest(query: productName, sort: selectedSortOption.sort)
     }
     
     required init?(coder: NSCoder) {
@@ -75,11 +98,11 @@ class SearchResultViewController: UIViewController {
     }
     
     func makeFilterItem() {
-        for item in sortItem{
+        for (index, sortOption) in SortOptions.allCases.enumerated(){
             var config = UIButton.Configuration.plain()
             let button = UIButton()
             
-            config.attributedTitle = AttributedString(item, attributes: AttributeContainer([
+            config.attributedTitle = AttributedString(sortOption.title, attributes: AttributeContainer([
                 .font: UIFont.systemFont(ofSize: 12)
             ]))
             
@@ -92,7 +115,9 @@ class SearchResultViewController: UIViewController {
             button.layer.borderColor = UIColor.white.cgColor
             button.clipsToBounds = true
             button.backgroundColor = .black
+            button.tag = index
             
+            button.addTarget(self, action: #selector(sortButtonClicked), for: .touchUpInside)
             filterStackView.addArrangedSubview(button)
             sortButtons.append(button)
         }
@@ -101,8 +126,25 @@ class SearchResultViewController: UIViewController {
         sortButtons[0].backgroundColor = .white
     }
     
-    func callRequest(query: String){
-        let url = "https://openapi.naver.com/v1/search/shop.json?query=\(query)&display=100"
+    @objc
+    private func sortButtonClicked(_ sender: UIButton){
+        guard let newOption = SortOptions(rawValue: sender.tag) else{
+            return
+        }
+        
+        let previousSortOption = selectedSortOption
+        sortButtons[previousSortOption.rawValue].configuration?.baseForegroundColor = .white
+        sortButtons[previousSortOption.rawValue].backgroundColor = .black
+        
+        selectedSortOption = newOption
+        sortButtons[selectedSortOption.rawValue].configuration?.baseForegroundColor = .black
+        sortButtons[selectedSortOption.rawValue].backgroundColor = .white
+        
+        callRequest(query: productName, sort: selectedSortOption.sort)
+    }
+    
+    func callRequest(query: String, sort: String){
+        let url = "https://openapi.naver.com/v1/search/shop.json?query=\(query)&display=100&sort=\(sort)"
         
         let headers = HTTPHeaders(
             ["X-Naver-Client-Id": APIKeyManager.naverClientID,

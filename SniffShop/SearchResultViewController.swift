@@ -164,6 +164,13 @@ class SearchResultViewController: UIViewController {
                     self?.productList.append(contentsOf: value.items)
                     self?.resultCountLabel.text = "\(value.total) 개의 검색 결과"
                     self?.resultCollectionView.reloadData()
+                    
+                    if self?.start == 1{
+                        self?.resultCollectionView
+                            .scrollToItem(at: IndexPath(item: 0, section: 0),
+                                          at: .top,
+                                          animated: true)
+                    }
                 case .failure(let error):
                     print(error)
                 }

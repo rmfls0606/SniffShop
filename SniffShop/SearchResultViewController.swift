@@ -11,8 +11,11 @@ import Alamofire
 
 class SearchResultViewController: UIViewController {
     
+    //MARK: - Property
     let productName: String
     private var productList: [NaverShoppingResultItem] = []
+    private let sortItem: [String] = ["정확도", "날짜순", "가격높은순", "가격낮은순"]
+    private var sortButtons: [UIButton] = []
     
     //MARK: - View
     private let resultCountLabel: UILabel = {
@@ -21,6 +24,15 @@ class SearchResultViewController: UIViewController {
         label.font = .systemFont(ofSize: 12)
         label.textColor = .green
         return label
+    }()
+    
+    private let filterStackView: UIStackView = {
+        let view = UIStackView()
+        view.axis = .horizontal
+        view.spacing = 10
+        view.alignment = .fill
+        view.distribution = .fillProportionally
+        return view
     }()
     
     private let resultCollectionView: UICollectionView = {
@@ -55,10 +67,38 @@ class SearchResultViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         configureHierarchy()
         configureLayout()
         configureView()
+        makeFilterItem()
+    }
+    
+    func makeFilterItem() {
+        for item in sortItem{
+            var config = UIButton.Configuration.plain()
+            let button = UIButton()
+            
+            config.attributedTitle = AttributedString(item, attributes: AttributeContainer([
+                .font: UIFont.systemFont(ofSize: 12)
+            ]))
+            
+            config.baseForegroundColor = .white
+            
+            button.configuration = config
+            
+            button.layer.cornerRadius = 5
+            button.layer.borderWidth = 1.0
+            button.layer.borderColor = UIColor.white.cgColor
+            button.clipsToBounds = true
+            button.backgroundColor = .black
+            
+            filterStackView.addArrangedSubview(button)
+            sortButtons.append(button)
+        }
+        
+        sortButtons[0].configuration?.baseForegroundColor = .black
+        sortButtons[0].backgroundColor = .white
     }
     
     func callRequest(query: String){
@@ -89,6 +129,8 @@ extension SearchResultViewController: ViewDesignProtocol{
     func configureHierarchy() {
         view.addSubview(resultCountLabel)
         
+        view.addSubview(filterStackView)
+        
         view.addSubview(resultCollectionView)
     }
     
@@ -98,8 +140,14 @@ extension SearchResultViewController: ViewDesignProtocol{
             make.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(16)
         }
         
-        resultCollectionView.snp.makeConstraints { make in
+        filterStackView.snp.makeConstraints { make in
             make.top.equalTo(resultCountLabel.snp.bottom).offset(8)
+            make.leading.equalToSuperview().inset(16)
+            make.trailing.lessThanOrEqualToSuperview().offset(-16)
+        }
+        
+        resultCollectionView.snp.makeConstraints { make in
+            make.top.equalTo(filterStackView.snp.bottom).offset(8)
             make.horizontalEdges.bottom.equalToSuperview()
         }
     }
@@ -119,7 +167,7 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return productList.count
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCollectionViewCell.identifier,
                                                             for: indexPath) as? SearchResultCollectionViewCell else {

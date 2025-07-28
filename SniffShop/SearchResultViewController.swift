@@ -38,6 +38,8 @@ class SearchResultViewController: UIViewController {
     private var productList: [NaverShoppingResultItem] = []
     private var sortButtons: [UIButton] = []
     private var selectedSortOption: SortOptions = .sim
+    private var start: Int = 1 //시작 위치
+    private var totalCount: Int = 0
     
     
     //MARK: - View
@@ -144,7 +146,7 @@ class SearchResultViewController: UIViewController {
     }
     
     func callRequest(query: String, sort: String){
-        let url = "https://openapi.naver.com/v1/search/shop.json?query=\(query)&display=100&sort=\(sort)"
+        let url = "https://openapi.naver.com/v1/search/shop.json?query=\(query)&display=30&sort=\(sort)&start=\(start)"
         
         let headers = HTTPHeaders(
             ["X-Naver-Client-Id": APIKeyManager.naverClientID,
@@ -156,7 +158,8 @@ class SearchResultViewController: UIViewController {
             .responseDecodable(of: NaverShoppingResultResponse.self) { [weak self] response in
                 switch response.result{
                 case .success(let value):
-                    self?.productList = value.items
+                    self?.totalCount = value.total
+                    self?.productList.append(contentsOf: value.items)
                     self?.resultCountLabel.text = "\(value.total) 개의 검색 결과"
                     self?.resultCollectionView.reloadData()
                 case .failure(let error):
@@ -219,5 +222,12 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
         cell.configureData(product: productList[indexPath.item])
         
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        if indexPath.item == productList.count - 4 && min(totalCount, 1100) > productList.count{
+            start += 30
+            callRequest(query: productName, sort: selectedSortOption.sort)
+        }
     }
 }

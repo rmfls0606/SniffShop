@@ -142,6 +142,8 @@ class SearchResultViewController: UIViewController {
         sortButtons[selectedSortOption.rawValue].configuration?.baseForegroundColor = .black
         sortButtons[selectedSortOption.rawValue].backgroundColor = .white
         
+        productList.removeAll()
+        start = 1
         callRequest(query: productName, sort: selectedSortOption.sort)
     }
     

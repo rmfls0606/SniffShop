@@ -45,7 +45,7 @@ class SearchResultViewController: UIViewController {
     //MARK: - View
     private let resultCountLabel: UILabel = {
         let label = UILabel()
-        label.text = "13,235,449 개의 검색 결과"
+        label.text = "0 개의 검색 결과"
         label.font = .systemFont(ofSize: 12)
         label.textColor = .green
         return label
@@ -162,7 +162,7 @@ class SearchResultViewController: UIViewController {
                 case .success(let value):
                     self?.totalCount = value.total
                     self?.productList.append(contentsOf: value.items)
-                    self?.resultCountLabel.text = "\(value.total) 개의 검색 결과"
+                    self?.resultCountLabel.text = "\(NumberFormatterManager.shared.formatNumber(value.total)) 개의 검색 결과"
                     self?.resultCollectionView.reloadData()
                     
                     if self?.start == 1{

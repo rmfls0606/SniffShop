@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 import Kingfisher
 
-class SearchResultCollectionViewCell: UICollectionViewCell {
+class SearchResultCollectionViewCell: BaseCollectionViewCell {
     
     //MARK: - Property
     static let identifier = "SearchResultCollectionViewCell"
@@ -70,32 +70,8 @@ class SearchResultCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        
-        configureHierarchy()
-        configureLayout()
-        configureView()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    func configureData(product: NaverShoppingResultItem){
-        
-        if let image_url = URL(string: product.image){
-            productImageView.kf.setImage(with: image_url)
-        }
-        
-        productMallName.text = product.mallName
-        productTitle.text = product.title.removedTagsText
-        productPrice.text = NumberFormatterManager.shared.formatNumber(product.lprice)
-    }
-}
-
-extension SearchResultCollectionViewCell: ViewDesignProtocol{
-    func configureHierarchy() {
+    //MARK: - BaseView
+    override func configureHierarchy() {
         contentView.addSubview(productPosterBox)
         
         productPosterBox.addSubview(productImageView)
@@ -108,7 +84,7 @@ extension SearchResultCollectionViewCell: ViewDesignProtocol{
         contentView.addSubview(productPrice)
     }
     
-    func configureLayout() {
+    override func configureLayout() {
         productPosterBox.snp.makeConstraints { make in
             make.top.horizontalEdges.equalToSuperview()
             make.height.equalTo(productImageView.snp.width)
@@ -141,7 +117,17 @@ extension SearchResultCollectionViewCell: ViewDesignProtocol{
         }
     }
     
-    func configureView() {
+    override func configureView() { }
+    
+    //MARK: - function
+    func configureData(product: NaverShoppingResultItem){
         
+        if let image_url = URL(string: product.image){
+            productImageView.kf.setImage(with: image_url)
+        }
+        
+        productMallName.text = product.mallName
+        productTitle.text = product.title.removedTagsText
+        productPrice.text = NumberFormatterManager.shared.formatNumber(product.lprice)
     }
 }

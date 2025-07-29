@@ -211,7 +211,10 @@ class SearchResultViewController: BaseViewController {
                         }
                     } failureHandler: { error in
                         self.indicatorView.stopAnimating()
-                        print(error)
+
+                        self.showAlert(title: "오류", message: error.localizedDescription, checkButtonTitle: "확인") {
+                            self.navigationController?.popViewController(animated: true)
+                        }
                     }
     }
 }

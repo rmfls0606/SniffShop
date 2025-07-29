@@ -80,6 +80,12 @@ class SearchResultViewController: BaseViewController {
         return collectionView
     }()
     
+    private let indicatorView: UIActivityIndicatorView = {
+        let view = UIActivityIndicatorView(style: .large)
+        view.color = .white
+        return view
+    }()
+    
     init(productName: String) {
         self.productName = productName
         super.init(nibName: nil, bundle: nil)
@@ -97,6 +103,8 @@ class SearchResultViewController: BaseViewController {
         view.addSubview(filterStackView)
         
         view.addSubview(resultCollectionView)
+        
+        view.addSubview(indicatorView)
     }
     
     override func configureLayout() {
@@ -114,6 +122,10 @@ class SearchResultViewController: BaseViewController {
         resultCollectionView.snp.makeConstraints { make in
             make.top.equalTo(filterStackView.snp.bottom).offset(8)
             make.horizontalEdges.bottom.equalToSuperview()
+        }
+        
+        indicatorView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
         }
     }
     
@@ -178,12 +190,14 @@ class SearchResultViewController: BaseViewController {
         start = 1
         callRequest(query: productName, sort: selectedSortOption.sort)
     }
-        
+    
     func callRequest(query: String, sort: String){
+        indicatorView.startAnimating()
         NetworkManager.shared
             .callRequest(
                 api: NaverRequest
                     .shopping(query: query, sort: sort, start: start)) { (value: NaverShoppingResultResponse) in
+                        self.indicatorView.stopAnimating()
                         self.totalCount = value.total
                         self.productList.append(contentsOf: value.items)
                         self.resultCountLabel.text = "\(NumberFormatterManager.shared.formatNumber(value.total)) 개의 검색 결과"
@@ -196,32 +210,33 @@ class SearchResultViewController: BaseViewController {
                                               animated: true)
                         }
                     } failureHandler: { error in
+                        self.indicatorView.stopAnimating()
                         print(error)
                     }
     }
 }
-
-//MARK: - CollectionView Delegate
-extension SearchResultViewController: UICollectionViewDelegate, UICollectionViewDataSource{
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return productList.count
-    }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCollectionViewCell.identifier,
-                                                            for: indexPath) as? SearchResultCollectionViewCell else {
-            return UICollectionViewCell()
+    //MARK: - CollectionView Delegate
+    extension SearchResultViewController: UICollectionViewDelegate, UICollectionViewDataSource{
+        func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+            return productList.count
         }
         
-        cell.configureData(product: productList[indexPath.item])
+        func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCollectionViewCell.identifier,
+                                                                for: indexPath) as? SearchResultCollectionViewCell else {
+                return UICollectionViewCell()
+            }
+            
+            cell.configureData(product: productList[indexPath.item])
+            
+            return cell
+        }
         
-        return cell
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        if indexPath.item == productList.count - 4 && min(totalCount, 1100) > productList.count{
-            start += 30
-            callRequest(query: productName, sort: selectedSortOption.sort)
+        func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+            if indexPath.item == productList.count - 4 && min(totalCount, 1100) > productList.count{
+                start += 30
+                callRequest(query: productName, sort: selectedSortOption.sort)
+            }
         }
     }
-}

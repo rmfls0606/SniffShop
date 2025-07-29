@@ -36,6 +36,7 @@ class SearchResultViewController: BaseViewController {
     //MARK: - Property
     let productName: String
     private var productList: [NaverShoppingResultItem] = []
+    private var adList: [NaverShoppingResultItem] = []
     private var sortButtons: [UIButton] = []
     private var selectedSortOption: SortOptions = .sim
     private var start: Int = 1 //시작 위치
@@ -60,6 +61,15 @@ class SearchResultViewController: BaseViewController {
         return view
     }()
     
+    private let collectionViewStackView: UIStackView = {
+        let view = UIStackView()
+        view.axis = .vertical
+        view.spacing = 8
+        view.alignment = .fill
+        view.distribution = .fill
+        return view
+    }()
+    
     private let resultCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         
@@ -76,7 +86,23 @@ class SearchResultViewController: BaseViewController {
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .black
+        collectionView.tag = 0
+        return collectionView
+    }()
+    
+    private let adCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
         
+        let dimension = UIScreen.main.bounds.width * 0.3
+        
+        layout.itemSize = CGSize(width: dimension, height: dimension)
+        layout.minimumInteritemSpacing = 8
+        
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .black
+        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.tag = 1
         return collectionView
     }()
     
@@ -102,7 +128,10 @@ class SearchResultViewController: BaseViewController {
         
         view.addSubview(filterStackView)
         
-        view.addSubview(resultCollectionView)
+        view.addSubview(collectionViewStackView)
+        
+        collectionViewStackView.addArrangedSubview(resultCollectionView)
+        collectionViewStackView.addArrangedSubview(adCollectionView)
         
         view.addSubview(indicatorView)
     }
@@ -119,9 +148,14 @@ class SearchResultViewController: BaseViewController {
             make.trailing.lessThanOrEqualToSuperview().offset(-16)
         }
         
-        resultCollectionView.snp.makeConstraints { make in
+        collectionViewStackView.snp.makeConstraints { make in
             make.top.equalTo(filterStackView.snp.bottom).offset(8)
-            make.horizontalEdges.bottom.equalToSuperview()
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalTo(view.safeAreaLayoutGuide)
+        }
+
+        adCollectionView.snp.makeConstraints { make in
+            make.height.equalTo(UIScreen.main.bounds.width * 0.3)
         }
         
         indicatorView.snp.makeConstraints { make in
@@ -138,6 +172,9 @@ class SearchResultViewController: BaseViewController {
         resultCollectionView.delegate = self
         resultCollectionView.dataSource = self
         
+        adCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
+        adCollectionView.delegate = self
+        adCollectionView.dataSource = self
         makeFilterItem()
     }
     
@@ -237,18 +274,29 @@ class SearchResultViewController: BaseViewController {
 //MARK: - CollectionView Delegate
 extension SearchResultViewController: UICollectionViewDelegate, UICollectionViewDataSource{
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return productList.count
+        if collectionView.tag == 0{
+            return productList.count
+        }else{ //tag = 1
+            return 10
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCollectionViewCell.identifier,
-                                                            for: indexPath) as? SearchResultCollectionViewCell else {
-            return UICollectionViewCell()
+        if collectionView.tag == 0{
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCollectionViewCell.identifier,
+                                                                for: indexPath) as? SearchResultCollectionViewCell else {
+                return UICollectionViewCell()
+            }
+            
+            cell.configureData(product: productList[indexPath.item])
+            
+            return cell
+        }else{ //tag = 1
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
+            cell.backgroundColor = .brown
+            
+            return cell
         }
-        
-        cell.configureData(product: productList[indexPath.item])
-        
-        return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {

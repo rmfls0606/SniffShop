@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class MainViewController: UIViewController {
+class MainViewController: BaseViewController {
     
     //MARK: - View
     private let mainSearchBar: UISearchBar = {
@@ -36,17 +36,8 @@ class MainViewController: UIViewController {
         return label
     }()
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        configureHierarchy()
-        configureLayout()
-        configureView()
-    }
-}
-
-extension MainViewController: ViewDesignProtocol{
-    func configureHierarchy() {
+    //MARK: - BaseViewController
+    override func configureHierarchy() {
         view.addSubview(mainSearchBar)
         
         view.addSubview(content)
@@ -54,7 +45,7 @@ extension MainViewController: ViewDesignProtocol{
         content.addSubview(mainTextLabel)
     }
     
-    func configureLayout() {
+    override func configureLayout() {
         mainSearchBar.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
             make.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(16)
@@ -71,7 +62,7 @@ extension MainViewController: ViewDesignProtocol{
         }
     }
     
-    func configureView() {
+    override func configureView() {
         view.backgroundColor = .black
         
         navigationItem.title = "킁킁쇼핑몰"

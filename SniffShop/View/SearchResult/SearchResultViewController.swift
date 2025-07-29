@@ -9,29 +9,29 @@ import UIKit
 import SnapKit
 import Alamofire
 
-enum SortOptions: Int, CaseIterable{
-    case sim = 0, date, asc, dsc
+class SearchResultViewController: BaseViewController {
     
-    var title: String{
-        switch self{
-        case .sim: return "정확도"
-        case .date: return "날짜순"
-        case .asc: return "가격낮은순"
-        case .dsc: return "가격높은순"
+    enum SortOptions: Int, CaseIterable{
+        case sim = 0, date, asc, dsc
+        
+        var title: String{
+            switch self{
+            case .sim: return "정확도"
+            case .date: return "날짜순"
+            case .asc: return "가격낮은순"
+            case .dsc: return "가격높은순"
+            }
+        }
+        
+        var sort: String{
+            switch self{
+            case .sim: return "sim"
+            case .date: return "date"
+            case .asc: return "asc"
+            case .dsc: return "dsc"
+            }
         }
     }
-    
-    var sort: String{
-        switch self{
-        case .sim: return "sim"
-        case .date: return "date"
-        case .asc: return "asc"
-        case .dsc: return "dsc"
-        }
-    }
-}
-
-class SearchResultViewController: UIViewController {
     
     //MARK: - Property
     let productName: String
@@ -90,15 +90,43 @@ class SearchResultViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    //MARK: - BaseViewController
+    override func configureHierarchy() {
+        view.addSubview(resultCountLabel)
         
-        configureHierarchy()
-        configureLayout()
-        configureView()
-        makeFilterItem()
+        view.addSubview(filterStackView)
+        
+        view.addSubview(resultCollectionView)
     }
     
+    override func configureLayout() {
+        resultCountLabel.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
+            make.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(16)
+        }
+        
+        filterStackView.snp.makeConstraints { make in
+            make.top.equalTo(resultCountLabel.snp.bottom).offset(8)
+            make.leading.equalToSuperview().inset(16)
+            make.trailing.lessThanOrEqualToSuperview().offset(-16)
+        }
+        
+        resultCollectionView.snp.makeConstraints { make in
+            make.top.equalTo(filterStackView.snp.bottom).offset(8)
+            make.horizontalEdges.bottom.equalToSuperview()
+        }
+    }
+    
+    override func configureView() {
+        navigationItem.title = productName
+        
+        resultCollectionView.register(SearchResultCollectionViewCell.self, forCellWithReuseIdentifier: SearchResultCollectionViewCell.identifier)
+        resultCollectionView.delegate = self
+        resultCollectionView.dataSource = self
+    }
+    
+    
+    //MARK: - function
     func makeFilterItem() {
         for (index, sortOption) in SortOptions.allCases.enumerated(){
             var config = UIButton.Configuration.plain()
@@ -175,44 +203,6 @@ class SearchResultViewController: UIViewController {
                     print(error)
                 }
             }
-    }
-}
-
-//MARK: - ViewDesignProtocol
-extension SearchResultViewController: ViewDesignProtocol{
-    func configureHierarchy() {
-        view.addSubview(resultCountLabel)
-        
-        view.addSubview(filterStackView)
-        
-        view.addSubview(resultCollectionView)
-    }
-    
-    func configureLayout() {
-        resultCountLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
-            make.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(16)
-        }
-        
-        filterStackView.snp.makeConstraints { make in
-            make.top.equalTo(resultCountLabel.snp.bottom).offset(8)
-            make.leading.equalToSuperview().inset(16)
-            make.trailing.lessThanOrEqualToSuperview().offset(-16)
-        }
-        
-        resultCollectionView.snp.makeConstraints { make in
-            make.top.equalTo(filterStackView.snp.bottom).offset(8)
-            make.horizontalEdges.bottom.equalToSuperview()
-        }
-    }
-    
-    func configureView() {
-        view.backgroundColor = .black
-        navigationItem.title = productName
-        
-        resultCollectionView.register(SearchResultCollectionViewCell.self, forCellWithReuseIdentifier: SearchResultCollectionViewCell.identifier)
-        resultCollectionView.delegate = self
-        resultCollectionView.dataSource = self
     }
 }
 

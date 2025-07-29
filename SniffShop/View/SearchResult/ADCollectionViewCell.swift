@@ -9,4 +9,5 @@ import UIKit
 
 class ADCollectionViewCell: BaseCollectionViewCell {
     
+    static let identifier = "ADCollectionViewCell"
 }

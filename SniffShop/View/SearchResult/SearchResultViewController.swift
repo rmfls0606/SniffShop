@@ -211,35 +211,50 @@ class SearchResultViewController: BaseViewController {
                         }
                     } failureHandler: { error in
                         self.indicatorView.stopAnimating()
-
+                        
+                        if let afError = error as? AFError,
+                           let urlError = afError.underlyingError as? URLError,
+                           urlError.code == .notConnectedToInternet{
+                            self.showAlert(title: "네트워크 오류",
+                                           message: "인터넷에 연결되어 있지 않습니다.\nWi-Fi 또는 셀룰러 설정으로 이동할 수 있습니다.",
+                                           checkButtonTitle: "설정으로 이동",
+                                           isCancelButton: true) {
+                                if let url = URL(string: UIApplication.openSettingsURLString),
+                                   UIApplication.shared.canOpenURL(url){
+                                    UIApplication.shared.open(url)
+                                }
+                            }
+                            return
+                        }
+                        
                         self.showAlert(title: "오류", message: error.localizedDescription, checkButtonTitle: "확인") {
                             self.navigationController?.popViewController(animated: true)
                         }
                     }
     }
 }
+
+//MARK: - CollectionView Delegate
+extension SearchResultViewController: UICollectionViewDelegate, UICollectionViewDataSource{
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return productList.count
+    }
     
-    //MARK: - CollectionView Delegate
-    extension SearchResultViewController: UICollectionViewDelegate, UICollectionViewDataSource{
-        func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-            return productList.count
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCollectionViewCell.identifier,
+                                                            for: indexPath) as? SearchResultCollectionViewCell else {
+            return UICollectionViewCell()
         }
         
-        func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCollectionViewCell.identifier,
-                                                                for: indexPath) as? SearchResultCollectionViewCell else {
-                return UICollectionViewCell()
-            }
-            
-            cell.configureData(product: productList[indexPath.item])
-            
-            return cell
-        }
+        cell.configureData(product: productList[indexPath.item])
         
-        func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-            if indexPath.item == productList.count - 4 && min(totalCount, 1100) > productList.count{
-                start += 30
-                callRequest(query: productName, sort: selectedSortOption.sort)
-            }
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        if indexPath.item == productList.count - 4 && min(totalCount, 1100) > productList.count{
+            start += 30
+            callRequest(query: productName, sort: selectedSortOption.sort)
         }
     }
+}

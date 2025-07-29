@@ -44,7 +44,8 @@ class SearchResultViewController: BaseViewController {
     private var adList: [NaverShoppingResultItem] = []
     private var sortButtons: [UIButton] = []
     private var selectedSortOption: SortOptions = .sim
-    private var start: Int = 1 //시작 위치
+    private var resultStart: Int = 1 //결과 시작 위치
+    private var adStart: Int = 1 //광고 시작 위치
     private var totalCount: Int = 0
     
     
@@ -230,32 +231,33 @@ class SearchResultViewController: BaseViewController {
         sortButtons[selectedSortOption.rawValue].backgroundColor = .white
         
         productList.removeAll()
-        start = 1
+        resultStart = 1
         callRequest(query: productName, sort: selectedSortOption.sort, tag: .result)
     }
     
     func callRequest(query: String, sort: String, tag: collectionViewTag){
         indicatorView.startAnimating()
+        let start = tag.rawValue == 0 ? resultStart : adStart
         NetworkManager.shared
             .callRequest(
                 api: NaverRequest
                     .shopping(query: query, sort: sort, start: start)) { (value: NaverShoppingResultResponse) in
                         self.indicatorView.stopAnimating()
+                        self.totalCount = value.total
                         switch tag{
                         case .result:
-                            self.totalCount = value.total
                             self.productList.append(contentsOf: value.items)
                             self.resultCountLabel.text = "\(NumberFormatterManager.shared.formatNumber(value.total)) 개의 검색 결과"
                             self.resultCollectionView.reloadData()
                             
-                            if self.start == 1{
+                            if self.resultStart == 1{
                                 self.resultCollectionView
                                     .scrollToItem(at: IndexPath(item: 0, section: 0),
                                                   at: .top,
                                                   animated: true)
                             }
                         case .ad:
-                            self.adList = value.items
+                            self.adList.append(contentsOf: value.items)
                             self.adCollectionView.reloadData()
                         }
                        
@@ -317,9 +319,17 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        if indexPath.item == productList.count - 4 && min(totalCount, 1100) > productList.count{
-            start += 30
-            callRequest(query: productName, sort: selectedSortOption.sort, tag: .result)
+        if collectionView.tag == collectionViewTag.result.rawValue{
+            if indexPath.item == productList.count - 4 && min(totalCount, 1100) > productList.count{
+                resultStart += 30
+                callRequest(query: productName, sort: selectedSortOption.sort, tag: .result)
+            }
+        }else{
+            if indexPath.item == adList.count - 4 && min(totalCount, 1100) > adList.count{
+                adStart += 30
+                callRequest(query: "광고", sort: SortOptions.sim.sort, tag: .ad)
+            }
         }
+        
     }
 }

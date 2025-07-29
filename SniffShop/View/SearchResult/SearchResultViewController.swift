@@ -33,6 +33,11 @@ class SearchResultViewController: BaseViewController {
         }
     }
     
+    enum collectionViewTag: Int{
+        case result = 0
+        case ad
+    }
+    
     //MARK: - Property
     let productName: String
     private var productList: [NaverShoppingResultItem] = []
@@ -115,7 +120,8 @@ class SearchResultViewController: BaseViewController {
     init(productName: String) {
         self.productName = productName
         super.init(nibName: nil, bundle: nil)
-        callRequest(query: productName, sort: selectedSortOption.sort)
+        callRequest(query: productName, sort: selectedSortOption.sort, tag: .result)
+        callRequest(query: "광고", sort: SortOptions.sim.sort, tag: .ad)
     }
     
     required init?(coder: NSCoder) {
@@ -225,27 +231,34 @@ class SearchResultViewController: BaseViewController {
         
         productList.removeAll()
         start = 1
-        callRequest(query: productName, sort: selectedSortOption.sort)
+        callRequest(query: productName, sort: selectedSortOption.sort, tag: .result)
     }
     
-    func callRequest(query: String, sort: String){
+    func callRequest(query: String, sort: String, tag: collectionViewTag){
         indicatorView.startAnimating()
         NetworkManager.shared
             .callRequest(
                 api: NaverRequest
                     .shopping(query: query, sort: sort, start: start)) { (value: NaverShoppingResultResponse) in
                         self.indicatorView.stopAnimating()
-                        self.totalCount = value.total
-                        self.productList.append(contentsOf: value.items)
-                        self.resultCountLabel.text = "\(NumberFormatterManager.shared.formatNumber(value.total)) 개의 검색 결과"
-                        self.resultCollectionView.reloadData()
-                        
-                        if self.start == 1{
-                            self.resultCollectionView
-                                .scrollToItem(at: IndexPath(item: 0, section: 0),
-                                              at: .top,
-                                              animated: true)
+                        switch tag{
+                        case .result:
+                            self.totalCount = value.total
+                            self.productList.append(contentsOf: value.items)
+                            self.resultCountLabel.text = "\(NumberFormatterManager.shared.formatNumber(value.total)) 개의 검색 결과"
+                            self.resultCollectionView.reloadData()
+                            
+                            if self.start == 1{
+                                self.resultCollectionView
+                                    .scrollToItem(at: IndexPath(item: 0, section: 0),
+                                                  at: .top,
+                                                  animated: true)
+                            }
+                        case .ad:
+                            self.adList = value.items
+                            self.adCollectionView.reloadData()
                         }
+                       
                     } failureHandler: { error in
                         self.indicatorView.stopAnimating()
                         
@@ -274,10 +287,10 @@ class SearchResultViewController: BaseViewController {
 //MARK: - CollectionView Delegate
 extension SearchResultViewController: UICollectionViewDelegate, UICollectionViewDataSource{
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if collectionView.tag == 0{
+        if collectionView.tag == collectionViewTag.result.rawValue{
             return productList.count
         }else{ //tag = 1
-            return 10
+            return adList.count
         }
     }
     
@@ -297,6 +310,8 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
                 return UICollectionViewCell()
             }
             
+            cell.configureData(product: adList[indexPath.item])
+            
             return cell
         }
     }
@@ -304,7 +319,7 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         if indexPath.item == productList.count - 4 && min(totalCount, 1100) > productList.count{
             start += 30
-            callRequest(query: productName, sort: selectedSortOption.sort)
+            callRequest(query: productName, sort: selectedSortOption.sort, tag: .result)
         }
     }
 }

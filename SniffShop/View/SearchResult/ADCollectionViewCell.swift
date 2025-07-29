@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Kingfisher
 
 class ADCollectionViewCell: BaseCollectionViewCell {
     
@@ -15,7 +16,8 @@ class ADCollectionViewCell: BaseCollectionViewCell {
     private let adImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
-        imageView.backgroundColor = .systemGray6
+        imageView.backgroundColor = .systemGray4
+        imageView.clipsToBounds = true
         return imageView
     }()
     
@@ -31,5 +33,11 @@ class ADCollectionViewCell: BaseCollectionViewCell {
     
     override func configureView() {
         
+    }
+    
+    func configureData(product: NaverShoppingResultItem){
+        if let image_url = URL(string: product.image){
+            adImageView.kf.setImage(with: image_url)
+        }
     }
 }

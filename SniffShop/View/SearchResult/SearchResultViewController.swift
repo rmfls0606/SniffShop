@@ -172,7 +172,7 @@ class SearchResultViewController: BaseViewController {
         resultCollectionView.delegate = self
         resultCollectionView.dataSource = self
         
-        adCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
+        adCollectionView.register(ADCollectionViewCell.self, forCellWithReuseIdentifier: ADCollectionViewCell.identifier)
         adCollectionView.delegate = self
         adCollectionView.dataSource = self
         makeFilterItem()
@@ -292,8 +292,10 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
             
             return cell
         }else{ //tag = 1
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-            cell.backgroundColor = .brown
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ADCollectionViewCell.identifier,
+                                                                for: indexPath) as? ADCollectionViewCell else{
+                return UICollectionViewCell()
+            }
             
             return cell
         }

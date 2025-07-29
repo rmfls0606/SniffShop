@@ -118,11 +118,15 @@ class SearchResultViewController: BaseViewController {
     }
     
     override func configureView() {
+        view.backgroundColor = .black
+        
         navigationItem.title = productName
         
         resultCollectionView.register(SearchResultCollectionViewCell.self, forCellWithReuseIdentifier: SearchResultCollectionViewCell.identifier)
         resultCollectionView.delegate = self
         resultCollectionView.dataSource = self
+        
+        makeFilterItem()
     }
     
     

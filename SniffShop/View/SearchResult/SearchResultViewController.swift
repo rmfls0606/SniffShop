@@ -178,35 +178,26 @@ class SearchResultViewController: BaseViewController {
         start = 1
         callRequest(query: productName, sort: selectedSortOption.sort)
     }
-    
+        
     func callRequest(query: String, sort: String){
-        let url = "https://openapi.naver.com/v1/search/shop.json?query=\(query)&display=30&sort=\(sort)&start=\(start)"
-        
-        let headers = HTTPHeaders(
-            ["X-Naver-Client-Id": APIKeyManager.naverClientID,
-             "X-Naver-Client-Secret": APIKeyManager.naverClienSecret]
-        )
-        
-        AF.request(url, method: .get, headers: headers)
-            .validate(statusCode: 200..<300)
-            .responseDecodable(of: NaverShoppingResultResponse.self) { [weak self] response in
-                switch response.result{
-                case .success(let value):
-                    self?.totalCount = value.total
-                    self?.productList.append(contentsOf: value.items)
-                    self?.resultCountLabel.text = "\(NumberFormatterManager.shared.formatNumber(value.total)) 개의 검색 결과"
-                    self?.resultCollectionView.reloadData()
-                    
-                    if self?.start == 1{
-                        self?.resultCollectionView
-                            .scrollToItem(at: IndexPath(item: 0, section: 0),
-                                          at: .top,
-                                          animated: true)
+        NetworkManager.shared
+            .callRequest(
+                api: NaverRequest
+                    .shopping(query: query, sort: sort, start: start)) { (value: NaverShoppingResultResponse) in
+                        self.totalCount = value.total
+                        self.productList.append(contentsOf: value.items)
+                        self.resultCountLabel.text = "\(NumberFormatterManager.shared.formatNumber(value.total)) 개의 검색 결과"
+                        self.resultCollectionView.reloadData()
+                        
+                        if self.start == 1{
+                            self.resultCollectionView
+                                .scrollToItem(at: IndexPath(item: 0, section: 0),
+                                              at: .top,
+                                              animated: true)
+                        }
+                    } failureHandler: { error in
+                        print(error)
                     }
-                case .failure(let error):
-                    print(error)
-                }
-            }
     }
 }
 

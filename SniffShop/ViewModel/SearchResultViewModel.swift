@@ -18,6 +18,7 @@ final class SearchResultViewModel{
     private(set) var outputAds: Observable<[NaverShoppingResultItem]> = Observable([])
     private(set) var outputErrorMessage: Observable<String?> = Observable(nil)
     private(set) var outputTotalCountText: Observable<String> = Observable("0 개의 검색 결과")
+    private(set) var outputSelectedSort = Observable(SortOptions.sim)
     
     private var resultStart: Int = 1 //결과 시작 위치
     private var adStart: Int = 1 //광고 시작 위치
@@ -36,6 +37,8 @@ final class SearchResultViewModel{
         
         inputSort.lazyBind { [weak self] sort in
             self?.reset()
+            
+            self?.outputSelectedSort.value = sort
         }
         
         inputProductWillDisplayItem.lazyBind { [weak self] index in

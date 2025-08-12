@@ -219,6 +219,22 @@ class SearchResultViewController: BaseViewController {
             sortButtons[selected.rawValue].configuration?.baseForegroundColor = .black
             sortButtons[selected.rawValue].backgroundColor = .white
         }
+        
+        viewModel.outputError.lazyBind { [weak self] error in
+            guard let error = error else { return }
+            
+            self?.showAlert(title: error.title, message: error.message, checkButtonTitle: error.buttonTitle) {
+                switch error{
+                case .notConnectedToInternet:
+                    if let url = URL(string: UIApplication.openSettingsURLString),
+                       UIApplication.shared.canOpenURL(url){
+                        UIApplication.shared.open(url)
+                    }
+                case .otherError:
+                    self?.navigationController?.popViewController(animated: true)
+                }
+            }
+        }
     }
     
     @objc

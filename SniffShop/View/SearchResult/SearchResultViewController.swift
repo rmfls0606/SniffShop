@@ -9,43 +9,42 @@ import UIKit
 import SnapKit
 import Alamofire
 
-class SearchResultViewController: BaseViewController {
+enum SortOptions: Int, CaseIterable{
+    case sim = 0, date, asc, dsc
     
-    enum SortOptions: Int, CaseIterable{
-        case sim = 0, date, asc, dsc
-        
-        var title: String{
-            switch self{
-            case .sim: return "정확도"
-            case .date: return "날짜순"
-            case .asc: return "가격낮은순"
-            case .dsc: return "가격높은순"
-            }
-        }
-        
-        var sort: String{
-            switch self{
-            case .sim: return "sim"
-            case .date: return "date"
-            case .asc: return "asc"
-            case .dsc: return "dsc"
-            }
+    var title: String{
+        switch self{
+        case .sim: return "정확도"
+        case .date: return "날짜순"
+        case .asc: return "가격낮은순"
+        case .dsc: return "가격높은순"
         }
     }
     
+    var sort: String{
+        switch self{
+        case .sim: return "sim"
+        case .date: return "date"
+        case .asc: return "asc"
+        case .dsc: return "dsc"
+        }
+    }
+}
+
+class SearchResultViewController: BaseViewController {
     enum collectionViewTag: Int{
         case result = 0
         case ad
     }
     
     //MARK: - Property
-    private var productList: [NaverShoppingResultItem] = []
-    private var adList: [NaverShoppingResultItem] = []
+//    private var productList: [NaverShoppingResultItem] = []
+//    private var adList: [NaverShoppingResultItem] = []
     private var sortButtons: [UIButton] = []
     private var selectedSortOption: SortOptions = .sim
-    private var resultStart: Int = 1 //결과 시작 위치
-    private var adStart: Int = 1 //광고 시작 위치
-    private var totalCount: Int = 0
+//    private var resultStart: Int = 1 //결과 시작 위치
+//    private var adStart: Int = 1 //광고 시작 위치
+//    private var totalCount: Int = 0
     
     let viewModel = SearchResultViewModel()
     
@@ -118,19 +117,19 @@ class SearchResultViewController: BaseViewController {
         return view
     }()
     
-    init() {
-        super.init(nibName: nil, bundle: nil)
-        callRequest(
-            query: viewModel.outputTitle.value,
-            sort: selectedSortOption.sort,
-            tag: .result
-        )
-        callRequest(query: "광고", sort: SortOptions.sim.sort, tag: .ad)
-    }
+//    init() {
+//        super.init(nibName: nil, bundle: nil)
+//        callRequest(
+//            query: viewModel.outputTitle.value,
+//            sort: selectedSortOption.sort,
+//            tag: .result
+//        )
+//        callRequest(query: "광고", sort: SortOptions.sim.sort, tag: .ad)
+//    }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+//    required init?(coder: NSCoder) {
+//        fatalError("init(coder:) has not been implemented")
+//    }
     
     //MARK: - BaseViewController
     override func configureHierarchy() {
@@ -176,10 +175,6 @@ class SearchResultViewController: BaseViewController {
     override func configureView() {
         view.backgroundColor = .black
         
-        viewModel.outputTitle.bind { [weak self] title in
-            self?.navigationItem.title = title
-        }
-        
         resultCollectionView.register(SearchResultCollectionViewCell.self, forCellWithReuseIdentifier: SearchResultCollectionViewCell.identifier)
         resultCollectionView.delegate = self
         resultCollectionView.dataSource = self
@@ -188,6 +183,7 @@ class SearchResultViewController: BaseViewController {
         adCollectionView.delegate = self
         adCollectionView.dataSource = self
         makeFilterItem()
+        setBind()
     }
     
     
@@ -221,128 +217,145 @@ class SearchResultViewController: BaseViewController {
         sortButtons[0].backgroundColor = .white
     }
     
-    @objc
-    private func sortButtonClicked(_ sender: UIButton){
-        guard let newOption = SortOptions(rawValue: sender.tag) else{
-            return
+    private func setBind(){
+        viewModel.outputTitle.bind { [weak self] title in
+            self?.navigationItem.title = title
         }
         
-        let previousSortOption = selectedSortOption
-        sortButtons[previousSortOption.rawValue].configuration?.baseForegroundColor = .white
-        sortButtons[previousSortOption.rawValue].backgroundColor = .black
+        viewModel.outputTotalCountText.bind { [weak self] text in
+            self?.resultCountLabel.text = text
+        }
         
-        selectedSortOption = newOption
-        sortButtons[selectedSortOption.rawValue].configuration?.baseForegroundColor = .black
-        sortButtons[selectedSortOption.rawValue].backgroundColor = .white
-        
-        productList.removeAll()
-        resultStart = 1
-        callRequest(
-            query: viewModel.outputTitle.value,
-            sort: selectedSortOption.sort,
-            tag: .result
-        )
+        viewModel.outputProducts.bind { [weak self] _ in
+            self?.resultCollectionView.reloadData()
+        }
     }
     
-    func callRequest(query: String, sort: String, tag: collectionViewTag){
-        indicatorView.startAnimating()
-        let start = tag.rawValue == 0 ? resultStart : adStart
-        NetworkManager.shared
-            .callRequest(
-                api: NaverRequest
-                    .shopping(query: query, sort: sort, start: start)) { (value: NaverShoppingResultResponse) in
-                        self.indicatorView.stopAnimating()
-                        self.totalCount = value.total
-                        switch tag{
-                        case .result:
-                            self.productList.append(contentsOf: value.items)
-                            self.resultCountLabel.text = "\(NumberFormatterManager.shared.formatNumber(value.total)) 개의 검색 결과"
-                            self.resultCollectionView.reloadData()
-                            
-                            if self.resultStart == 1{
-                                self.resultCollectionView
-                                    .scrollToItem(at: IndexPath(item: 0, section: 0),
-                                                  at: .top,
-                                                  animated: true)
-                            }
-                        case .ad:
-                            self.adList.append(contentsOf: value.items)
-                            self.adCollectionView.reloadData()
-                        }
-                       
-                    } failureHandler: { error in
-                        self.indicatorView.stopAnimating()
-                        
-                        if let afError = error as? AFError,
-                           let urlError = afError.underlyingError as? URLError,
-                           urlError.code == .notConnectedToInternet{
-                            self.showAlert(title: "네트워크 오류",
-                                           message: "인터넷에 연결되어 있지 않습니다.\nWi-Fi 또는 셀룰러 설정으로 이동할 수 있습니다.",
-                                           checkButtonTitle: "설정으로 이동",
-                                           isCancelButton: true) {
-                                if let url = URL(string: UIApplication.openSettingsURLString),
-                                   UIApplication.shared.canOpenURL(url){
-                                    UIApplication.shared.open(url)
-                                }
-                            }
-                            return
-                        }
-                        
-                        self.showAlert(title: "오류", message: error.localizedDescription, checkButtonTitle: "확인") {
-                            self.navigationController?.popViewController(animated: true)
-                        }
-                    }
+    @objc
+    private func sortButtonClicked(_ sender: UIButton){
+//        guard let newOption = SortOptions(rawValue: sender.tag) else{
+//            return
+//        }
+//        
+//        let previousSortOption = selectedSortOption
+//        sortButtons[previousSortOption.rawValue].configuration?.baseForegroundColor = .white
+//        sortButtons[previousSortOption.rawValue].backgroundColor = .black
+//        
+//        selectedSortOption = newOption
+//        sortButtons[selectedSortOption.rawValue].configuration?.baseForegroundColor = .black
+//        sortButtons[selectedSortOption.rawValue].backgroundColor = .white
+//        
+//        productList.removeAll()
+//        resultStart = 1
+//        callRequest(
+//            query: viewModel.outputTitle.value,
+//            sort: selectedSortOption.sort,
+//            tag: .result
+//        )
     }
+    
+//    func callRequest(query: String, sort: String, tag: collectionViewTag){
+//        indicatorView.startAnimating()
+//        let start = tag.rawValue == 0 ? resultStart : adStart
+//        NetworkManager.shared
+//            .callRequest(
+//                api: NaverRequest
+//                    .shopping(query: query, sort: sort, start: start)) { (value: NaverShoppingResultResponse) in
+//                        self.indicatorView.stopAnimating()
+//                        self.totalCount = value.total
+//                        switch tag{
+//                        case .result:
+//                            self.productList.append(contentsOf: value.items)
+//                            self.resultCountLabel.text = "\(NumberFormatterManager.shared.formatNumber(value.total)) 개의 검색 결과"
+//                            self.resultCollectionView.reloadData()
+//                            
+//                            if self.resultStart == 1{
+//                                self.resultCollectionView
+//                                    .scrollToItem(at: IndexPath(item: 0, section: 0),
+//                                                  at: .top,
+//                                                  animated: true)
+//                            }
+//                        case .ad:
+//                            self.adList.append(contentsOf: value.items)
+//                            self.adCollectionView.reloadData()
+//                        }
+//                       
+//                    } failureHandler: { error in
+//                        self.indicatorView.stopAnimating()
+//                        
+//                        if let afError = error as? AFError,
+//                           let urlError = afError.underlyingError as? URLError,
+//                           urlError.code == .notConnectedToInternet{
+//                            self.showAlert(title: "네트워크 오류",
+//                                           message: "인터넷에 연결되어 있지 않습니다.\nWi-Fi 또는 셀룰러 설정으로 이동할 수 있습니다.",
+//                                           checkButtonTitle: "설정으로 이동",
+//                                           isCancelButton: true) {
+//                                if let url = URL(string: UIApplication.openSettingsURLString),
+//                                   UIApplication.shared.canOpenURL(url){
+//                                    UIApplication.shared.open(url)
+//                                }
+//                            }
+//                            return
+//                        }
+//                        
+//                        self.showAlert(title: "오류", message: error.localizedDescription, checkButtonTitle: "확인") {
+//                            self.navigationController?.popViewController(animated: true)
+//                        }
+//                    }
+//    }
 }
 
 //MARK: - CollectionView Delegate
 extension SearchResultViewController: UICollectionViewDelegate, UICollectionViewDataSource{
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if collectionView.tag == collectionViewTag.result.rawValue{
-            return productList.count
-        }else{ //tag = 1
-            return adList.count
-        }
+//        if collectionView.tag == collectionViewTag.result.rawValue{
+//            return productList.count
+//        }else{ //tag = 1
+//            return adList.count
+//        }
+        return viewModel.outputProducts.value.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        if collectionView.tag == 0{
+//        if collectionView.tag == 0{
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCollectionViewCell.identifier,
                                                                 for: indexPath) as? SearchResultCollectionViewCell else {
                 return UICollectionViewCell()
             }
             
-            cell.configureData(product: productList[indexPath.item])
+            let product = viewModel.outputProducts.value[indexPath.item]
+            cell.configureData(product: product)
             
             return cell
-        }else{ //tag = 1
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ADCollectionViewCell.identifier,
-                                                                for: indexPath) as? ADCollectionViewCell else{
-                return UICollectionViewCell()
-            }
-            
-            cell.configureData(product: adList[indexPath.item])
-            
-            return cell
-        }
+//        }else{ //tag = 1
+//            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ADCollectionViewCell.identifier,
+//                                                                for: indexPath) as? ADCollectionViewCell else{
+//                return UICollectionViewCell()
+//            }
+//            
+//            cell.configureData(product: adList[indexPath.item])
+//            
+//            return cell
+//        }
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        if collectionView.tag == collectionViewTag.result.rawValue{
-            if indexPath.item == productList.count - 4 && min(totalCount, 1100) > productList.count{
-                resultStart += 30
-                callRequest(
-                    query: viewModel.outputTitle.value,
-                    sort: selectedSortOption.sort,
-                    tag: .result
-                )
-            }
-        }else{
-            if indexPath.item == adList.count - 4 && min(totalCount, 1100) > adList.count{
-                adStart += 30
-                callRequest(query: "광고", sort: SortOptions.sim.sort, tag: .ad)
-            }
-        }
+//        if collectionView.tag == collectionViewTag.result.rawValue{
+        viewModel.inputProductWillDisplayItem.value = indexPath.item
+//        if indexPath.item == viewModel.outputProducts.value.count - 4 && min(viewModel.totalCount, 1100) > viewModel.outputProducts.value.count{
+//                resultStart += 30
+//                callRequest(
+//                    query: viewModel.outputTitle.value,
+//                    sort: selectedSortOption.sort,
+//                    tag: .result
+//                )
+//            }
+//        }else{
+//            if indexPath.item == adList.count - 4 && min(totalCount, 1100) > adList.count{
+//                adStart += 30
+//                callRequest(query: "광고", sort: SortOptions.sim.sort, tag: .ad)
+//            }
+//        }
         
     }
 }

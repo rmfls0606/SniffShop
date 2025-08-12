@@ -38,6 +38,12 @@ class MainViewController: BaseViewController {
         return label
     }()
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        self.mainSearchBar.becomeFirstResponder()
+    }
+    
     //MARK: - BaseViewController
     override func configureHierarchy() {
         view.addSubview(mainSearchBar)

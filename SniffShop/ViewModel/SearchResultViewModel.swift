@@ -11,20 +11,27 @@ final class SearchResultViewModel{
     var inputTitle: Observable<String> = Observable("")
     var inputSort: Observable<SortOptions> = Observable(.sim)
     var inputProductWillDisplayItem: Observable<Int> = Observable(0)
+    var inputAdWillDisplayItem: Observable<Int> = Observable(0)
     
     private(set) var outputTitle: Observable<String> = Observable("")
     private(set) var outputProducts: Observable<[NaverShoppingResultItem]> = Observable([])
+    private(set) var outputAds: Observable<[NaverShoppingResultItem]> = Observable([])
     private(set) var outputErrorMessage: Observable<String?> = Observable(nil)
     private(set) var outputTotalCountText: Observable<String> = Observable("0 개의 검색 결과")
     
     private var resultStart: Int = 1 //결과 시작 위치
-    private(set) var totalCount: Int = 0
+    private var adStart: Int = 1 //광고 시작 위치
+    private var totalCount: Int = 0
+    private var adTotalCount: Int = 0
     private var isEnd = false
+    private var adIsEnd = false
     
     init(){
         inputTitle.lazyBind { [weak self] title in
             self?.outputTitle.value = title
             self?.reset()
+            
+            self?.adCallRequest()
         }
         
         inputSort.lazyBind { [weak self] sort in
@@ -33,6 +40,10 @@ final class SearchResultViewModel{
         
         inputProductWillDisplayItem.lazyBind { [weak self] index in
             self?.productPageRequest(currentIndex: index)
+        }
+        
+        inputAdWillDisplayItem.lazyBind { [weak self] index in
+            self?.adPageRequest(currentIndex: index)
         }
     }
     
@@ -63,11 +74,36 @@ final class SearchResultViewModel{
         }
     }
     
+    private func adCallRequest(){
+        NetworkManager.shared.callRequest(api: .shopping(query: "치킨", sort: inputSort.value.sort, start: adStart)) { [weak self] (value: NaverShoppingResultResponse)in
+            
+            guard !value.items.isEmpty else{
+                self?.adIsEnd = true
+                return
+            }
+            
+            self?.adTotalCount = value.total
+            self?.adIsEnd = self?.adStart ?? 0 >= min(1100, self?.adTotalCount ?? 0)
+            
+            self?.outputAds.value += value.items
+        } failureHandler: { error in
+            print(error)
+        }
+    }
+    
     private func productPageRequest(currentIndex: Int){
         guard outputProducts.value.count > 0 else { return }
         if currentIndex >= outputProducts.value.count - 4 && !isEnd{
             self.resultStart += 30
             shoppingCallRequest()
+        }
+    }
+    
+    private func adPageRequest(currentIndex: Int){
+        guard outputAds.value.count > 0 else { return }
+        if currentIndex >= outputAds.value.count - 4 && !adIsEnd{
+            self.adStart += 30
+            adCallRequest()
         }
     }
 }

@@ -33,13 +33,8 @@ enum SortOptions: Int, CaseIterable{
 
 class SearchResultViewController: BaseViewController {
     //MARK: - Property
-//    private var productList: [NaverShoppingResultItem] = []
-//    private var adList: [NaverShoppingResultItem] = []
     private var sortButtons: [UIButton] = []
     private var selectedSortOption: SortOptions = .sim
-//    private var resultStart: Int = 1 //결과 시작 위치
-//    private var adStart: Int = 1 //광고 시작 위치
-//    private var totalCount: Int = 0
     
     let viewModel = SearchResultViewModel()
     
@@ -214,29 +209,24 @@ class SearchResultViewController: BaseViewController {
         viewModel.outputAds.bind { [weak self] _ in
             self?.adCollectionView.reloadData()
         }
+        
+        viewModel.outputSelectedSort.bind { [weak self] selected in
+            guard let self else { return }
+            self.sortButtons[self.selectedSortOption.rawValue].configuration?.baseForegroundColor = .white
+            self.sortButtons[self.selectedSortOption.rawValue].backgroundColor = .black
+            
+            self.selectedSortOption = selected
+            sortButtons[selected.rawValue].configuration?.baseForegroundColor = .black
+            sortButtons[selected.rawValue].backgroundColor = .white
+        }
     }
     
     @objc
     private func sortButtonClicked(_ sender: UIButton){
-//        guard let newOption = SortOptions(rawValue: sender.tag) else{
-//            return
-//        }
-//        
-//        let previousSortOption = selectedSortOption
-//        sortButtons[previousSortOption.rawValue].configuration?.baseForegroundColor = .white
-//        sortButtons[previousSortOption.rawValue].backgroundColor = .black
-//        
-//        selectedSortOption = newOption
-//        sortButtons[selectedSortOption.rawValue].configuration?.baseForegroundColor = .black
-//        sortButtons[selectedSortOption.rawValue].backgroundColor = .white
-//        
-//        productList.removeAll()
-//        resultStart = 1
-//        callRequest(
-//            query: viewModel.outputTitle.value,
-//            sort: selectedSortOption.sort,
-//            tag: .result
-//        )
+        guard let newOption = SortOptions(rawValue: sender.tag) else{
+            return
+        }
+        viewModel.inputSort.value = newOption
     }
 }
 

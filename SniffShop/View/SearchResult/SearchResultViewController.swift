@@ -39,7 +39,6 @@ class SearchResultViewController: BaseViewController {
     }
     
     //MARK: - Property
-    let productName: String
     private var productList: [NaverShoppingResultItem] = []
     private var adList: [NaverShoppingResultItem] = []
     private var sortButtons: [UIButton] = []
@@ -48,6 +47,7 @@ class SearchResultViewController: BaseViewController {
     private var adStart: Int = 1 //광고 시작 위치
     private var totalCount: Int = 0
     
+    let viewModel = SearchResultViewModel()
     
     //MARK: - View
     private let resultCountLabel: UILabel = {
@@ -118,10 +118,13 @@ class SearchResultViewController: BaseViewController {
         return view
     }()
     
-    init(productName: String) {
-        self.productName = productName
+    init() {
         super.init(nibName: nil, bundle: nil)
-        callRequest(query: productName, sort: selectedSortOption.sort, tag: .result)
+        callRequest(
+            query: viewModel.outputTitle.value,
+            sort: selectedSortOption.sort,
+            tag: .result
+        )
         callRequest(query: "광고", sort: SortOptions.sim.sort, tag: .ad)
     }
     
@@ -173,7 +176,9 @@ class SearchResultViewController: BaseViewController {
     override func configureView() {
         view.backgroundColor = .black
         
-        navigationItem.title = productName
+        viewModel.outputTitle.bind { [weak self] title in
+            self?.navigationItem.title = title
+        }
         
         resultCollectionView.register(SearchResultCollectionViewCell.self, forCellWithReuseIdentifier: SearchResultCollectionViewCell.identifier)
         resultCollectionView.delegate = self
@@ -232,7 +237,11 @@ class SearchResultViewController: BaseViewController {
         
         productList.removeAll()
         resultStart = 1
-        callRequest(query: productName, sort: selectedSortOption.sort, tag: .result)
+        callRequest(
+            query: viewModel.outputTitle.value,
+            sort: selectedSortOption.sort,
+            tag: .result
+        )
     }
     
     func callRequest(query: String, sort: String, tag: collectionViewTag){
@@ -322,7 +331,11 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
         if collectionView.tag == collectionViewTag.result.rawValue{
             if indexPath.item == productList.count - 4 && min(totalCount, 1100) > productList.count{
                 resultStart += 30
-                callRequest(query: productName, sort: selectedSortOption.sort, tag: .result)
+                callRequest(
+                    query: viewModel.outputTitle.value,
+                    sort: selectedSortOption.sort,
+                    tag: .result
+                )
             }
         }else{
             if indexPath.item == adList.count - 4 && min(totalCount, 1100) > adList.count{

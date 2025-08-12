@@ -94,7 +94,7 @@ final class SearchResultViewModel{
     private func productPageRequest(currentIndex: Int){
         guard outputProducts.value.count > 0 else { return }
         if currentIndex >= outputProducts.value.count - 4 && !isEnd{
-            self.resultStart += 30
+            self.resultStart += 100
             shoppingCallRequest()
         }
     }
@@ -102,7 +102,7 @@ final class SearchResultViewModel{
     private func adPageRequest(currentIndex: Int){
         guard outputAds.value.count > 0 else { return }
         if currentIndex >= outputAds.value.count - 4 && !adIsEnd{
-            self.adStart += 30
+            self.adStart += 100
             adCallRequest()
         }
     }

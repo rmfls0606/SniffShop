@@ -25,7 +25,7 @@ enum NaverRequest{
     var parameters: [String: Any]{
         switch self{
         case .shopping(let query, let sort, let start):
-            ["query": query, "sort": sort, "start": start, "display": 30]
+            ["query": query, "sort": sort, "start": start, "display": 100]
         }
     }
     

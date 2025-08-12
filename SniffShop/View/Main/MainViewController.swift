@@ -10,6 +10,8 @@ import SnapKit
 
 class MainViewController: BaseViewController {
     
+    private let viewModel = MainViewModel()
+    
     //MARK: - View
     private let mainSearchBar: UISearchBar = {
         let searchBar = UISearchBar()
@@ -68,20 +70,28 @@ class MainViewController: BaseViewController {
         navigationItem.title = "킁킁쇼핑몰"
         
         mainSearchBar.delegate = self
+        
+        viewModel.outputAlertMessage.lazyBind { [weak self] message in
+            self?.mainSearchBar.text = ""
+            
+            self?.showAlert(
+                title: "",
+                message: message,
+                checkButtonTitle: "확인") {
+                    print("checkButton Clicked")
+                }
+        }
+        
+        viewModel.outputProductName.lazyBind { [weak self] name in
+            let vc = SearchResultViewController(productName: name)
+            self?.navigationController?.pushViewController(vc, animated: true)
+        }
     }
 }
 
 //MARK: - SearchBar Delegate
 extension MainViewController: UISearchBarDelegate{
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        guard let text = searchBar.text, text.trimmingCharacters(in: .whitespaces).count >= 2 else {
-            showAlert(title: "", message: "정확한 검색을 위해 두 글자 이상 검색어를 입력해주세요.", checkButtonTitle: "확인") {
-                print("checkButton Clicked")
-            }
-            return
-        }
-        
-        let searchResultVC = SearchResultViewController(productName: text)
-        navigationController?.pushViewController(searchResultVC, animated: true)
+        viewModel.inputProductName.value = searchBar.text
     }
 }

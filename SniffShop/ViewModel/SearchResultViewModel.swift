@@ -8,13 +8,66 @@
 import Foundation
 
 final class SearchResultViewModel{
-    var inputeTitle: Observable<String> = Observable("")
+    var inputTitle: Observable<String> = Observable("")
+    var inputSort: Observable<SortOptions> = Observable(.sim)
+    var inputProductWillDisplayItem: Observable<Int> = Observable(0)
     
     private(set) var outputTitle: Observable<String> = Observable("")
+    private(set) var outputProducts: Observable<[NaverShoppingResultItem]> = Observable([])
+    private(set) var outputErrorMessage: Observable<String?> = Observable(nil)
+    private(set) var outputTotalCountText: Observable<String> = Observable("0 개의 검색 결과")
+    
+    private var resultStart: Int = 1 //결과 시작 위치
+    private(set) var totalCount: Int = 0
+    private var isEnd = false
     
     init(){
-        inputeTitle.lazyBind { [weak self] title in
+        inputTitle.lazyBind { [weak self] title in
             self?.outputTitle.value = title
+            self?.reset()
+        }
+        
+        inputSort.lazyBind { [weak self] sort in
+            self?.reset()
+        }
+        
+        inputProductWillDisplayItem.lazyBind { [weak self] index in
+            self?.productPageRequest(currentIndex: index)
+        }
+    }
+    
+    private func reset(){
+        resultStart = 1
+        totalCount = 0
+        isEnd = false
+        outputProducts.value = []
+        outputTotalCountText.value = "0 개의 검색 결과"
+        shoppingCallRequest()
+    }
+    
+    private func shoppingCallRequest(){
+        NetworkManager.shared.callRequest(api: .shopping(query: inputTitle.value, sort: inputSort.value.sort, start: resultStart)) { [weak self] (value: NaverShoppingResultResponse)in
+            
+            guard !value.items.isEmpty else{
+                self?.isEnd = true
+                return
+            }
+            
+            self?.totalCount = value.total
+            self?.isEnd = self?.resultStart ?? 0 >= min(1100, self?.totalCount ?? 0)
+            self?.outputTotalCountText.value = "\(NumberFormatterManager.shared.formatNumber(value.total)) 개의 검색 결과"
+            
+            self?.outputProducts.value += value.items
+        } failureHandler: { error in
+            print(error)
+        }
+    }
+    
+    private func productPageRequest(currentIndex: Int){
+        guard outputProducts.value.count > 0 else { return }
+        if currentIndex >= outputProducts.value.count - 4 && !isEnd{
+            self.resultStart += 30
+            shoppingCallRequest()
         }
     }
 }

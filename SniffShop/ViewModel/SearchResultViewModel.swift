@@ -7,6 +7,38 @@
 
 import Foundation
 
+enum NetworkError: Error {
+    case notConnectedToInternet
+    case otherError(message: String)
+    
+    var title: String{
+        switch self{
+        case .notConnectedToInternet:
+            return "네트워크 오류"
+        case .otherError:
+            return "오류"
+        }
+    }
+    
+    var message: String{
+        switch self{
+        case .notConnectedToInternet:
+            return "인터넷에 연결되어 있ㅈ지 않습니다.\nWi-Fi 또는 셀룰러 설정으로 이동할 수 있습니다."
+        case .otherError(let message):
+            return message
+        }
+    }
+    
+    var buttonTitle: String{
+        switch self{
+        case .notConnectedToInternet:
+            return "설정으로 이동"
+        case .otherError:
+            return "확인"
+        }
+    }
+}
+
 final class SearchResultViewModel{
     var inputTitle: Observable<String> = Observable("")
     var inputSort: Observable<SortOptions> = Observable(.sim)
@@ -16,7 +48,7 @@ final class SearchResultViewModel{
     private(set) var outputTitle: Observable<String> = Observable("")
     private(set) var outputProducts: Observable<[NaverShoppingResultItem]> = Observable([])
     private(set) var outputAds: Observable<[NaverShoppingResultItem]> = Observable([])
-    private(set) var outputErrorMessage: Observable<String?> = Observable(nil)
+    private(set) var outputError: Observable<NetworkError?> = Observable(nil)
     private(set) var outputTotalCountText: Observable<String> = Observable("0 개의 검색 결과")
     private(set) var outputSelectedSort = Observable(SortOptions.sim)
     
@@ -73,7 +105,13 @@ final class SearchResultViewModel{
             
             self?.outputProducts.value += value.items
         } failureHandler: { error in
-            print(error)
+            if let afError = error.asAFError,
+               let urlError = afError.underlyingError as? URLError,
+               urlError.code == .notConnectedToInternet{
+                self.outputError.value = .notConnectedToInternet
+                return
+            }
+            self.outputError.value = .otherError(message: error.localizedDescription)
         }
     }
     

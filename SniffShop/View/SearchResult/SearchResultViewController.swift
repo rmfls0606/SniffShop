@@ -242,8 +242,7 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if collectionView == resultCollectionView{
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCollectionViewCell.identifier,
-                                                                for: indexPath) as? SearchResultCollectionViewCell else {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCollectionViewCell.identifier, for: indexPath) as? SearchResultCollectionViewCell else {
                 return UICollectionViewCell()
             }
             
@@ -252,8 +251,7 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
             
             return cell
         }else{
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ADCollectionViewCell.identifier,
-                                                                for: indexPath) as? ADCollectionViewCell else{
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ADCollectionViewCell.identifier, for: indexPath) as? ADCollectionViewCell else{
                 return UICollectionViewCell()
             }
             

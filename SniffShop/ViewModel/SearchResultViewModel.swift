@@ -40,17 +40,24 @@ enum NetworkError: Error {
 }
 
 final class SearchResultViewModel{
-    var inputTitle: Observable<String> = Observable("")
-    var inputSort: Observable<SortOptions> = Observable(.sim)
-    var inputProductWillDisplayItem: Observable<Int> = Observable(0)
-    var inputAdWillDisplayItem: Observable<Int> = Observable(0)
+    var input: Input
+    var output: Output
     
-    private(set) var outputTitle: Observable<String> = Observable("")
-    private(set) var outputProducts: Observable<[NaverShoppingResultItem]> = Observable([])
-    private(set) var outputAds: Observable<[NaverShoppingResultItem]> = Observable([])
-    private(set) var outputError: Observable<NetworkError?> = Observable(nil)
-    private(set) var outputTotalCountText: Observable<String> = Observable("0 개의 검색 결과")
-    private(set) var outputSelectedSort = Observable(SortOptions.sim)
+    struct Input{
+        var title: Observable<String> = Observable("")
+        var sort: Observable<SortOptions> = Observable(.sim)
+        var productWillDisplayItem: Observable<Int> = Observable(0)
+        var adWillDisplayItem: Observable<Int> = Observable(0)
+    }
+    
+    struct Output{
+        private(set) var title: Observable<String> = Observable("")
+        private(set) var products: Observable<[NaverShoppingResultItem]> = Observable([])
+        private(set) var ads: Observable<[NaverShoppingResultItem]> = Observable([])
+        private(set) var error: Observable<NetworkError?> = Observable(nil)
+        private(set) var totalCountText: Observable<String> = Observable("0 개의 검색 결과")
+        private(set) var selectedSort = Observable(SortOptions.sim)
+    }
     
     private var resultStart: Int = 1 //결과 시작 위치
     private var adStart: Int = 1 //광고 시작 위치
@@ -60,24 +67,27 @@ final class SearchResultViewModel{
     private var adIsEnd = false
     
     init(){
-        inputTitle.lazyBind { [weak self] title in
-            self?.outputTitle.value = title
+        input = Input()
+        output = Output()
+        
+        input.title.lazyBind { [weak self] title in
+            self?.output.title.value = title
             self?.reset()
             
             self?.adCallRequest()
         }
         
-        inputSort.lazyBind { [weak self] sort in
+        input.sort.lazyBind { [weak self] sort in
             self?.reset()
             
-            self?.outputSelectedSort.value = sort
+            self?.output.selectedSort.value = sort
         }
         
-        inputProductWillDisplayItem.lazyBind { [weak self] index in
+        input.productWillDisplayItem.lazyBind { [weak self] index in
             self?.productPageRequest(currentIndex: index)
         }
         
-        inputAdWillDisplayItem.lazyBind { [weak self] index in
+        input.adWillDisplayItem.lazyBind { [weak self] index in
             self?.adPageRequest(currentIndex: index)
         }
     }
@@ -86,13 +96,13 @@ final class SearchResultViewModel{
         resultStart = 1
         totalCount = 0
         isEnd = false
-        outputProducts.value = []
-        outputTotalCountText.value = "0 개의 검색 결과"
+        output.products.value = []
+        output.totalCountText.value = "0 개의 검색 결과"
         shoppingCallRequest()
     }
     
     private func shoppingCallRequest(){
-        NetworkManager.shared.callRequest(api: .shopping(query: inputTitle.value, sort: inputSort.value.sort, start: resultStart)) { [weak self] (value: NaverShoppingResultResponse)in
+        NetworkManager.shared.callRequest(api: .shopping(query: input.title.value, sort: input.sort.value.sort, start: resultStart)) { [weak self] (value: NaverShoppingResultResponse)in
             
             guard !value.items.isEmpty else{
                 self?.isEnd = true
@@ -101,22 +111,22 @@ final class SearchResultViewModel{
             
             self?.totalCount = value.total
             self?.isEnd = self?.resultStart ?? 0 >= min(1100, self?.totalCount ?? 0)
-            self?.outputTotalCountText.value = "\(NumberFormatterManager.shared.formatNumber(value.total)) 개의 검색 결과"
+            self?.output.totalCountText.value = "\(NumberFormatterManager.shared.formatNumber(value.total)) 개의 검색 결과"
             
-            self?.outputProducts.value += value.items
+            self?.output.products.value += value.items
         } failureHandler: { error in
             if let afError = error.asAFError,
                let urlError = afError.underlyingError as? URLError,
                urlError.code == .notConnectedToInternet{
-                self.outputError.value = .notConnectedToInternet
+                self.output.error.value = .notConnectedToInternet
                 return
             }
-            self.outputError.value = .otherError(message: error.localizedDescription)
+            self.output.error.value = .otherError(message: error.localizedDescription)
         }
     }
     
     private func adCallRequest(){
-        NetworkManager.shared.callRequest(api: .shopping(query: "치킨", sort: inputSort.value.sort, start: adStart)) { [weak self] (value: NaverShoppingResultResponse)in
+        NetworkManager.shared.callRequest(api: .shopping(query: "치킨", sort: input.sort.value.sort, start: adStart)) { [weak self] (value: NaverShoppingResultResponse)in
             
             guard !value.items.isEmpty else{
                 self?.adIsEnd = true
@@ -126,23 +136,23 @@ final class SearchResultViewModel{
             self?.adTotalCount = value.total
             self?.adIsEnd = self?.adStart ?? 0 >= min(1100, self?.adTotalCount ?? 0)
             
-            self?.outputAds.value += value.items
+            self?.output.ads.value += value.items
         } failureHandler: { error in
             print(error)
         }
     }
     
     private func productPageRequest(currentIndex: Int){
-        guard outputProducts.value.count > 0 else { return }
-        if currentIndex >= outputProducts.value.count - 4 && !isEnd{
+        guard output.products.value.count > 0 else { return }
+        if currentIndex >= output.products.value.count - 4 && !isEnd{
             self.resultStart += 100
             shoppingCallRequest()
         }
     }
     
     private func adPageRequest(currentIndex: Int){
-        guard outputAds.value.count > 0 else { return }
-        if currentIndex >= outputAds.value.count - 4 && !adIsEnd{
+        guard output.ads.value.count > 0 else { return }
+        if currentIndex >= output.ads.value.count - 4 && !adIsEnd{
             self.adStart += 100
             adCallRequest()
         }

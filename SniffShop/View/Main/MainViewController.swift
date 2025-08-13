@@ -90,7 +90,7 @@ class MainViewController: BaseViewController {
         
         viewModel.output.productName.lazyBind { [weak self] name in
             let vc = SearchResultViewController()
-            vc.viewModel.inputTitle.value = name
+            vc.viewModel.input.title.value = name
             self?.navigationController?.pushViewController(vc, animated: true)
         }
     }

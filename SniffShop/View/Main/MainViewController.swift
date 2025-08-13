@@ -77,7 +77,7 @@ class MainViewController: BaseViewController {
         
         mainSearchBar.delegate = self
         
-        viewModel.outputAlertMessage.lazyBind { [weak self] message in
+        viewModel.output.alertMessage.lazyBind { [weak self] message in
             self?.mainSearchBar.text = ""
             
             self?.showAlert(
@@ -88,7 +88,7 @@ class MainViewController: BaseViewController {
                 }
         }
         
-        viewModel.outputProductName.lazyBind { [weak self] name in
+        viewModel.output.productName.lazyBind { [weak self] name in
             let vc = SearchResultViewController()
             vc.viewModel.inputTitle.value = name
             self?.navigationController?.pushViewController(vc, animated: true)
@@ -99,6 +99,6 @@ class MainViewController: BaseViewController {
 //MARK: - SearchBar Delegate
 extension MainViewController: UISearchBarDelegate{
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        viewModel.inputProductName.value = searchBar.text
+        viewModel.input.productName.value = searchBar.text
     }
 }

@@ -14,12 +14,14 @@ class NetworkManager{
     private init() { }
     
     func callRequest<T: Decodable>(api: NaverRequest,
-                                   successHandler: @escaping (T)  -> Void,
+                                   type: T.Type,
+                                   successHandler: @escaping (T) -> Void,
                                    failureHandler: @escaping (Error) -> Void){
         AF.request(api.endPoint,
                    method: api.method,
                    parameters: api.parameters,
-                   headers: api.headers)
+                   encoding: URLEncoding(destination: .queryString),
+                   headers: api.headers,)
             .validate(statusCode: 200..<300)
             .responseDecodable(of: T.self) { response in
                 switch response.result{

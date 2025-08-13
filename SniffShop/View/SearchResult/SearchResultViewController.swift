@@ -194,23 +194,23 @@ class SearchResultViewController: BaseViewController {
     }
     
     private func setBind(){
-        viewModel.outputTitle.bind { [weak self] title in
+        viewModel.output.title.bind { [weak self] title in
             self?.navigationItem.title = title
         }
         
-        viewModel.outputTotalCountText.bind { [weak self] text in
+        viewModel.output.totalCountText.bind { [weak self] text in
             self?.resultCountLabel.text = text
         }
         
-        viewModel.outputProducts.bind { [weak self] _ in
+        viewModel.output.products.bind { [weak self] _ in
             self?.resultCollectionView.reloadData()
         }
         
-        viewModel.outputAds.bind { [weak self] _ in
+        viewModel.output.ads.bind { [weak self] _ in
             self?.adCollectionView.reloadData()
         }
         
-        viewModel.outputSelectedSort.bind { [weak self] selected in
+        viewModel.output.selectedSort.bind { [weak self] selected in
             guard let self else { return }
             self.sortButtons[self.selectedSortOption.rawValue].configuration?.baseForegroundColor = .white
             self.sortButtons[self.selectedSortOption.rawValue].backgroundColor = .black
@@ -220,7 +220,7 @@ class SearchResultViewController: BaseViewController {
             sortButtons[selected.rawValue].backgroundColor = .white
         }
         
-        viewModel.outputError.lazyBind { [weak self] error in
+        viewModel.output.error.lazyBind { [weak self] error in
             guard let error = error else { return }
             
             self?.showAlert(title: error.title, message: error.message, checkButtonTitle: error.buttonTitle) {
@@ -242,7 +242,7 @@ class SearchResultViewController: BaseViewController {
         guard let newOption = SortOptions(rawValue: sender.tag) else{
             return
         }
-        viewModel.inputSort.value = newOption
+        viewModel.input.sort.value = newOption
     }
 }
 
@@ -250,9 +250,9 @@ class SearchResultViewController: BaseViewController {
 extension SearchResultViewController: UICollectionViewDelegate, UICollectionViewDataSource{
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == resultCollectionView{
-            return viewModel.outputProducts.value.count
+            return viewModel.output.products.value.count
         }else{
-            return viewModel.outputAds.value.count
+            return viewModel.output.ads.value.count
         }
     }
     
@@ -262,7 +262,7 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
                 return UICollectionViewCell()
             }
             
-            let product = viewModel.outputProducts.value[indexPath.item]
+            let product = viewModel.output.products.value[indexPath.item]
             cell.configureData(product: product)
             
             return cell
@@ -271,7 +271,7 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
                 return UICollectionViewCell()
             }
             
-            let product = viewModel.outputAds.value[indexPath.item]
+            let product = viewModel.output.ads.value[indexPath.item]
             cell.configureData(product: product)
             
             return cell
@@ -280,9 +280,9 @@ extension SearchResultViewController: UICollectionViewDelegate, UICollectionView
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         if collectionView == resultCollectionView{
-            viewModel.inputProductWillDisplayItem.value = indexPath.item
+            viewModel.input.productWillDisplayItem.value = indexPath.item
         }else{
-            viewModel.inputAdWillDisplayItem.value = indexPath.item
+            viewModel.input.adWillDisplayItem.value = indexPath.item
         }
     }
 }

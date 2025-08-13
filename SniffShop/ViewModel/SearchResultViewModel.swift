@@ -102,7 +102,7 @@ final class SearchResultViewModel{
     }
     
     private func shoppingCallRequest(){
-        NetworkManager.shared.callRequest(api: .shopping(query: input.title.value, sort: input.sort.value.sort, start: resultStart)) { [weak self] (value: NaverShoppingResultResponse)in
+        NetworkManager.shared.callRequest(api: .shopping(query: input.title.value, sort: input.sort.value.sort, start: resultStart), type: NaverShoppingResultResponse.self) { [weak self] value in
             
             guard !value.items.isEmpty else{
                 self?.isEnd = true
@@ -126,7 +126,7 @@ final class SearchResultViewModel{
     }
     
     private func adCallRequest(){
-        NetworkManager.shared.callRequest(api: .shopping(query: "치킨", sort: input.sort.value.sort, start: adStart)) { [weak self] (value: NaverShoppingResultResponse)in
+        NetworkManager.shared.callRequest(api: .shopping(query: "치킨", sort: input.sort.value.sort, start: adStart), type: NaverShoppingResultResponse.self) { [weak self] value in
             
             guard !value.items.isEmpty else{
                 self?.adIsEnd = true

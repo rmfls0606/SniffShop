@@ -8,25 +8,38 @@
 import Foundation
 
 final class MainViewModel{
+    var input: Input
+    var output: Output
     
-    let inputProductName: Observable<String?> = Observable(nil)
+    struct Input {
+        let productName: Observable<String?> = Observable(nil)
+    }
     
-    private(set) var outputProductName: Observable<String> = Observable("")
-    private(set) var outputAlertMessage: Observable<String> = Observable("")
+    struct Output{
+        private(set) var productName: Observable<String> = Observable("")
+        private(set) var alertMessage: Observable<String> = Observable("")
+    }
     
     init(){
-        inputProductName.lazyBind { [weak self] _ in
+        input = Input()
+        output = Output()
+        
+        transform()
+    }
+    
+    private func transform(){
+        input.productName.lazyBind { [weak self] _ in
             self?.productNameValidate()
         }
     }
     
     private func productNameValidate(){
-        guard let text = inputProductName.value, text.trimmingCharacters(in: .whitespaces).count >= 2 else {
-            outputAlertMessage.value = "정확한 검색을 위해 두 글자 이상 검색어를 입력해주세요."
+        guard let text = input.productName.value, text.trimmingCharacters(in: .whitespaces).count >= 2 else {
+            output.alertMessage.value = "정확한 검색을 위해 두 글자 이상 검색어를 입력해주세요."
             
             return
         }
         
-        outputProductName.value = text
+        output.productName.value = text
     }
 }
